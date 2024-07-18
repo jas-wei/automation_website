@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}
+Home
+{% endblock %}
+
+{% block content %}
+<h1 align="center">Notes</h1>
+<ul class="list-group list-group-flush" id="notes">
+  {% for note in user.notes %}
+  <li class="list-group-item">
+    {{ note.data }}
+    <button type="button" class="close" data-note-id="{{ note.id }}" onClick="deleteNote(this)"> <!-- delete note function -->
+      <span aria-hidden="true">&times;</span> <!-- delete icon -->
+    </button>
+  </li>
+  {% endfor %}
+</ul>
+<form method="POST">
+  <!-- post note into server -->
+  <textarea name="note" id="note" class="form-control"></textarea>
+  <br />
+  <div align="center">
+    <button type="submit" class="btn btn-primary">Add Note</button>
+  </div>
+</form>
+
+<!-- AI disturbance overlay form -->
+<div align="center">
+  <h1>AI Disturbance Overlay</h1>
+  <!-- so that the home route in views handles this post request -->
+  <form action="{{ url_for('views.home') }}" method="POST" enctype="multipart/form-data">
+      <div class="form-group">
+          <label for="input_file">Upload an Image:</label>
+          <input type="file" class="form-control" name="input_file" id="input_file" accept="image/*">
+      </div>
+      <!-- opacity slider -->
+      <div class="form-group">
+          <label for="opacity">Opacity (0% - 100%):</label> 
+          <!-- bootstrap initializations for the slider -->
+          <input type="range" step="0.01" class="form-control" name="opacity" id="opacity" min="0.00" max="1.00" value="0.00" required>
+          <span id="opacity-value">0%</span> <!-- display current opacity and hold default opacity -->
+      </div>
+      
+      <button type="submit" class="btn btn-primary">Add Overlay</button>
+  </form>
+</div>
+
+<script>
+    const opacitySlider = document.getElementById('opacity');
+    const opacityValue = document.getElementById('opacity-value');
+
+    opacitySlider.addEventListener('input', function() {
+        opacityValue.textContent = `${(opacitySlider.value * 100).toFixed(0)}%`;
+    });
+</script>
+{% endblock %}
