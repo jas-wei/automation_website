@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, flash, jsonify, url_for, redirect, Flask
+from flask import Blueprint, render_template, request, flash, jsonify, url_for, redirect, send_from_directory, session
 from flask_login import login_required, current_user 
 import json
 import subprocess
@@ -12,39 +12,57 @@ views = Blueprint('views', __name__)
 
 # Define the upload folder
 UPLOAD_FOLDER = os.path.join('website', 'uploads')
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
+DOWNLOAD_FOLDER = os.path.join('website', 'downloads')  # Define the download folder
+
+@views.route('/downloads/<filename>')
+def download_file(filename):
+    return send_from_directory(DOWNLOAD_FOLDER, filename)
 
 @views.route('/', methods=['GET', 'POST']) #home route
 @login_required
 def home():
+    output_image_url = session.pop('output_image_url', None)  # Retrieve and remove the URL from the session
+
     if request.method == 'POST': 
         if 'note' in request.form:
             note = request.form.get('note')#Gets the note from the HTML 
 
-            if len(note) < 1:#if ntoe is too short, flash error
+            if len(note) < 1:#if note is too short, flash error
                 flash('Note is too short!', category='error') 
             else:
                 new_note = Note(data=note, user_id=current_user.id)  #providing the scheme for the note 
-                db.session.add(new_note) #adding and commiting the note to the database. just like how user was in auth.py
+                db.session.add(new_note) #adding and committing the note to the database. just like how user was in auth.py
                 db.session.commit()
                 flash('Note added!', category='success')
         # handles the inputted image and the opacity post request from the viewer
-        elif 'input_file' in request.files :
-            file = request.files['uploads']
-            opacity = request.form.get('opacity')
-            if file.filename != '':
-                # creates a filepath to __pycache__ and save the file to the desired location
+        elif 'input_file' in request.files:
+            print("Input file received")  # Debug statement
+            file = request.files['input_file']
+            
+            if file.filename == '':
+                flash('No selected file')
+                return redirect(request.url)
+            
+            else:
+                print(f"Processing file: {file.filename}")  # Debug statement
+                # creates a filepath to downloads and save the file to the desired location
                 file_path = os.path.join(UPLOAD_FOLDER, file.filename)
                 file.save(file_path)
 
-                print(f"\n\n\n {file_path}\n\n\n ")
+                opacity = request.form.get('opacity')
+                print(f"Received opacity: {opacity}")  # Debug statement
+
                 # Process the input URL or the uploaded file with the specified opacity
-                overlay.add_AI_disturbance_overlay(file_path, opacity)
+                output_path = os.path.join(DOWNLOAD_FOLDER, 'output.png')
+                overlay.add_AI_disturbance_overlay(file_path, opacity, output_path)
                 flash('AI disturbance overlay added!', category='success')
+                output_image_url = url_for('views.download_file', filename='output.png')
+                print(f"Generated URL: {output_image_url}")  # Debug statement
+                session['output_image_url'] = output_image_url  # Store the URL in the session
                 return redirect(url_for('views.home'))
 
-    return render_template('home.html', user=current_user)
+    print(f"Rendering with URL: {output_image_url}")  # Debug statement
+    return render_template('home.html', user=current_user, output_image_url=output_image_url)
 
 @views.route('/delete-note', methods=['POST'])
 def delete_note():  

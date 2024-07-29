@@ -28,20 +28,25 @@ Home
 <!-- AI disturbance overlay form -->
 <div align="center">
   <h1>AI Disturbance Overlay</h1>
-  <!-- so that the home route in views handles this post request -->
+  <!-- Form to handle file upload and opacity settings -->
   <form action="{{ url_for('views.home') }}" method="POST" enctype="multipart/form-data">
+      {% if output_image_url %}
+      <h2>Processed Image</h2>
+      <!-- <h2>{{ output_image_url }}</h2> -->
+      <img src="{{ output_image_url }}" alt="Processed Image">
+      {% else %}
+      <p>No image to display</p>
+      {% endif %}
       <div class="form-group">
           <label for="input_file">Upload an Image:</label>
           <input type="file" class="form-control" name="input_file" id="input_file" accept="image/*">
       </div>
-      <!-- opacity slider -->
+      <!-- Opacity slider -->
       <div class="form-group">
-          <label for="opacity">Opacity (0% - 100%):</label> 
-          <!-- bootstrap initializations for the slider -->
+          <label for="opacity">Opacity (0% - 100%):</label>
           <input type="range" step="0.01" class="form-control" name="opacity" id="opacity" min="0.00" max="1.00" value="0.00" required>
-          <span id="opacity-value">0%</span> <!-- display current opacity and hold default opacity -->
+          <span id="opacity-value">0%</span> <!-- Display current opacity and hold default opacity -->
       </div>
-      
       <button type="submit" class="btn btn-primary">Add Overlay</button>
   </form>
 </div>
