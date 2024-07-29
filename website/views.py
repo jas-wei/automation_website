@@ -12,11 +12,18 @@ views = Blueprint('views', __name__)
 
 # Define the upload folder
 UPLOAD_FOLDER = os.path.join('website', 'uploads')
-DOWNLOAD_FOLDER = os.path.join('website', 'downloads')  # Define the download folder
+DOWNLOAD_FOLDER = os.path.join('website', 'static', 'downloads')  # Define the download folder
 
 @views.route('/downloads/<filename>')
 def download_file(filename):
-    return send_from_directory(DOWNLOAD_FOLDER, filename)
+    try:
+        print(f"Sending file from: {DOWNLOAD_FOLDER}, filename: {filename}", flush=True)  # Debug statement
+        return send_from_directory(DOWNLOAD_FOLDER, filename)
+    except Exception as e:
+        print(f"Error sending file: {e}", flush=True)
+        return "File not found", 404
+
+
 
 @views.route('/', methods=['GET', 'POST']) #home route
 @login_required
@@ -61,7 +68,7 @@ def home():
                 session['output_image_url'] = output_image_url  # Store the URL in the session
                 return redirect(url_for('views.home'))
 
-    print(f"Rendering with URL: {output_image_url}")  # Debug statement
+    print(f"\n\n\nRendering with URL: {output_image_url}\n\n\n")  # Debug statement
     return render_template('home.html', user=current_user, output_image_url=output_image_url)
 
 @views.route('/delete-note', methods=['POST'])

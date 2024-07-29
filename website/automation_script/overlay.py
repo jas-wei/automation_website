@@ -43,7 +43,7 @@ def add_AI_disturbance_overlay(input_path, opacity, output_path):
 
         # Save the resulting image
         input_image.save(output_path)
-        input_image.show()
+        # input_image.show()
     except Exception as e:
         print(f"An error occurred: {e}")
 

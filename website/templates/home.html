@@ -33,7 +33,7 @@ Home
       {% if output_image_url %}
       <h2>Processed Image</h2>
       <!-- <h2>{{ output_image_url }}</h2> -->
-      <img src="{{ output_image_url }}" alt="Processed Image">
+      <img src="{{url_for('static', filename='downloads/output.png')}}" width="600">
       {% else %}
       <p>No image to display</p>
       {% endif %}
