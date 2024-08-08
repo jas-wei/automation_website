@@ -1,62 +1,139 @@
-{% extends "base.html" %}
-
-{% block title %}
-Home
-{% endblock %}
-
-{% block content %}
-<h1 align="center">Notes</h1>
+{% extends "base.html" %} {% block title %} Home {% endblock %} {% block content
+%}
+<!-- <h1 align="center">Notes</h1>
 <ul class="list-group list-group-flush" id="notes">
   {% for note in user.notes %}
   <li class="list-group-item">
     {{ note.data }}
-    <button type="button" class="close" data-note-id="{{ note.id }}" onClick="deleteNote(this)"> <!-- delete note function -->
-      <span aria-hidden="true">&times;</span> <!-- delete icon -->
+    <button
+      type="button"
+      class="close"
+      data-note-id="{{ note.id }}"
+      onClick="deleteNote(this)"
+    >
+      <span aria-hidden="true">&times;</span>
     </button>
   </li>
   {% endfor %}
 </ul>
 <form method="POST">
-  <!-- post note into server -->
   <textarea name="note" id="note" class="form-control"></textarea>
   <br />
   <div align="center">
     <button type="submit" class="btn btn-primary">Add Note</button>
   </div>
-</form>
+</form> -->
 
-<!-- AI disturbance overlay form -->
+<!-- art protection form -->
 <div align="center">
-  <h1>AI Disturbance Overlay</h1>
   <!-- Form to handle file upload and opacity settings -->
-  <form action="{{ url_for('views.home') }}" method="POST" enctype="multipart/form-data">
-      {% if output_image_url %}
-      <h2>Processed Image</h2>
-      <!-- <h2>{{ output_image_url }}</h2> -->
-      <img src="{{url_for('static', filename='downloads/output.png')}}" width="600">
-      {% else %}
-      <p>No image to display</p>
-      {% endif %}
-      <div class="form-group">
+  <form
+    action="{{ url_for('views.home') }}"
+    method="POST"
+    enctype="multipart/form-data"
+  >
+    <div
+      style="
+        display: flex;
+        justify-content: space-between;
+        gap: 100px;
+        margin-top: 40px;
+      "
+    >
+      <div style="text-align: left; width: 50%">
+        {% if output_image_url %}
+        <h3>Processed Image</h3>
+        <img
+          src="{{url_for('static', filename='downloads/output.png')}}"
+          width="500"
+        />
+        {% else %}
+        <div class="form-group">
           <label for="input_file">Upload an Image:</label>
-          <input type="file" class="form-control" name="input_file" id="input_file" accept="image/*">
+          <input
+            type="file"
+            class="form-control"
+            name="input_file"
+            id="input_file"
+            accept="image/*"
+          />
+        </div>
+        {% endif %}
       </div>
-      <!-- Opacity slider -->
-      <div class="form-group">
-          <label for="opacity">Opacity (0% - 100%):</label>
-          <input type="range" step="0.01" class="form-control" name="opacity" id="opacity" min="0.00" max="1.00" value="0.00" required>
-          <span id="opacity-value">0%</span> <!-- Display current opacity and hold default opacity -->
+
+      <div style="text-align: right; width: 50%">
+        <div>
+          <div style="border: 1px solid lightgrey; padding: 10px; margin-top: 20px;">
+            <!-- AI disturbance overlay form -->
+            <h3>AI Disturbance Overlay</h3>
+            <!-- Opacity slider -->
+            <div class="form-group">
+              <label for="opacity">Opacity (0.0% - 50.0%):</label>
+              <input
+                type="range"
+                step="0.001"
+                class="form-control opacity-slider"
+                name="opacity"
+                id="ai-opacity"
+                min="0.000"
+                max="0.500"
+                value="0.000"
+                required
+              />
+              <span class="opacity-value">0.0%</span>
+              <!-- Display current opacity and hold default opacity -->
+            </div>
+          </div>
+          
+          <div style="border: 1px solid lightgrey; padding: 10px; margin-top: 20px;">
+            <!-- watermark overlay form -->
+            <h3>Watermark</h3>
+            <!-- Text box for watermark label -->
+            <div class="form-group">
+              <label for="watermark-label">Watermark Label:</label>
+              <input
+                type="text"
+                class="form-control"
+                name="watermark-label"
+                id="watermark-label"
+                placeholder="Enter watermark text"
+              />
+            </div>
+            <!-- Opacity slider -->
+            <div class="form-group">
+              <label for="opacity">Opacity (0.0% - 100.0%):</label>
+              <input
+                type="range"
+                step="0.001"
+                class="form-control opacity-slider"
+                name="opacity"
+                id="watermark-opacity"
+                min="0.000"
+                max="1.00"
+                value="0.000"
+                required
+              />
+              <span class="opacity-value">0.0%</span>
+              <!-- Display current opacity and hold default opacity -->
+            </div>
+          </div>
+          </div>
+
+        <button type="submit" class="btn btn-primary" style="margin-top: 20px;" >Add Overlay</button>
       </div>
-      <button type="submit" class="btn btn-primary">Add Overlay</button>
+    </div>
   </form>
 </div>
 
 <script>
-    const opacitySlider = document.getElementById('opacity');
-    const opacityValue = document.getElementById('opacity-value');
+  // a collection of "opacity-slider", allowing for itteration
+  const sliders = document.getElementsByClassName("opacity-slider");
+  const values = document.getElementsByClassName("opacity-value");
 
-    opacitySlider.addEventListener('input', function() {
-        opacityValue.textContent = `${(opacitySlider.value * 100).toFixed(0)}%`;
+  for (let i = 0; i < sliders.length; i++) {
+    sliders[i].addEventListener("input", function () {
+      values[i].textContent = `${(sliders[i].value * 100).toFixed(1)}%`;
     });
+  }
 </script>
 {% endblock %}

@@ -48,7 +48,44 @@ def add_AI_disturbance_overlay(input_path, opacity, output_path):
         print(f"An error occurred: {e}")
 
 
-# def add_watermark(input_path, output_path, watermark_path, opacity):
+def add_watermark(input_path, output_path, watermark_text, opacity):
+    try:
+        # Ensure opacity is a float
+        opacity = float(opacity)
+        if not (0.0 <= opacity <= 1.0):
+            raise ValueError("Opacity must be between 0.00 and 1.00")
+
+        # Open the original image
+        original = Image.open(input_path).convert("RGBA")
+
+        # Create an image for the watermark with an alpha layer (RGBA)
+        width, height = original.size
+        watermark = Image.new("RGBA", original.size)
+        
+        # Get a font
+        font = ImageFont.load_default()
+
+        # Get the size of the watermark
+        text_size = font.getsize(watermark_text)
+
+        # Position the text at the bottom right corner
+        position = (width - text_size[0] - 10, height - text_size[1] - 10)
+
+        # Create a drawing context
+        draw = ImageDraw.Draw(watermark)
+
+        # Draw the text onto the watermark image
+        draw.text(position, watermark_text, font=font, fill=(255, 255, 255, int(255 * opacity)))
+
+        # Combine the original image with the watermark
+        combined = Image.alpha_composite(original, watermark)
+
+        # Save the image
+        combined.show()  # Display the image (optional)
+        combined.save(output_path)
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
 
 # def main():
