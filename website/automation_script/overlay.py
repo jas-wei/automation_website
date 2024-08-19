@@ -1,6 +1,18 @@
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
+import time
 
-def add_AI_disturbance_overlay(input_path, opacity, output_path):
+def timeit(func):
+    def wrapper(*args, **kwargs):
+        start_time = time.time()  # Record the start time
+        result = func(*args, **kwargs)  # Call the actual function
+        end_time = time.time()  # Record the end time
+        elapsed_time = end_time - start_time  # Calculate the elapsed time
+        print(f"\n\n\n\nFunction '{func.__name__}' executed in {elapsed_time:.4f} seconds\n\n\n\n")
+        return result  # Return the result of the function
+    return wrapper
+
+@timeit
+def add_AI_disturbance_overlay(input_path, output_path, opacity):
     """
     This function overlays an AI disturbance image on top of your original image
     so that AI would have a harder time training on it.
@@ -42,16 +54,17 @@ def add_AI_disturbance_overlay(input_path, opacity, output_path):
         input_image.paste(overlay_image, (0, 0), overlay_image)
 
         # Save the resulting image
-        input_image.save(output_path)
+        input_image.save(output_path, format="PNG", compress_level=1)
         # input_image.show()
     except Exception as e:
         print(f"An error occurred: {e}")
 
-
-def add_watermark(input_path, output_path, watermark_text, opacity):
+@timeit
+def add_watermark(input_path, output_path, watermark_text, opacity, size):
     try:
         # Ensure opacity is a float
         opacity = float(opacity)
+        size = float(size)
         if not (0.0 <= opacity <= 1.0):
             raise ValueError("Opacity must be between 0.00 and 1.00")
 
@@ -61,18 +74,20 @@ def add_watermark(input_path, output_path, watermark_text, opacity):
         # Create an image for the watermark with an alpha layer (RGBA)
         width, height = original.size
         watermark = Image.new("RGBA", original.size)
-        
-        # Get a font
-        font = ImageFont.load_default()
 
-        # Get the size of the watermark
-        text_size = font.getsize(watermark_text)
-
-        # Position the text at the bottom right corner
-        position = (width - text_size[0] - 10, height - text_size[1] - 10)
+        # Load a font and specify the size (e.g., 50 for larger text)
+        font = ImageFont.truetype("calibri.ttf", size)  # Adjust the font size as needed
 
         # Create a drawing context
         draw = ImageDraw.Draw(watermark)
+
+        # Get the size of the watermark text
+        bbox = draw.textbbox((0, 0), watermark_text, font=font)
+        text_width = bbox[2] - bbox[0]
+        text_height = bbox[3] - bbox[1]
+
+        # Position the text at the bottom right corner
+        position = (width - text_width - size, height - text_height - size)
 
         # Draw the text onto the watermark image
         draw.text(position, watermark_text, font=font, fill=(255, 255, 255, int(255 * opacity)))
@@ -81,27 +96,9 @@ def add_watermark(input_path, output_path, watermark_text, opacity):
         combined = Image.alpha_composite(original, watermark)
 
         # Save the image
-        combined.show()  # Display the image (optional)
-        combined.save(output_path)
+        # combined.show()  # Display the image (optional)
+        combined.save(output_path, format="PNG", compress_level=1)
 
     except Exception as e:
         print(f"An error occurred: {e}")
 
-
-# def main():
-#     input_path = 'Attack.png'
-#     # overlay_path = 'overlay.png'
-#     # output_path = 'output.png'
-#     # watermark_text = 'klip_sk'
-#     opacity = 0.05
-
-#     # Call the function to add the watermark overlay
-#     add_AI_disturbance_overlay(input_path, opacity)
-
-
-
-
-
-
-# if (__name__ == '__main__'):
-#     main()

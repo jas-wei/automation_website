@@ -73,7 +73,7 @@
                 type="range"
                 step="0.001"
                 class="form-control opacity-slider"
-                name="opacity"
+                name="ai-opacity"
                 id="ai-opacity"
                 min="0.000"
                 max="0.500"
@@ -88,6 +88,7 @@
           <div style="border: 1px solid lightgrey; padding: 10px; margin-top: 20px;">
             <!-- watermark overlay form -->
             <h3>Watermark</h3>
+            
             <!-- Text box for watermark label -->
             <div class="form-group">
               <label for="watermark-label">Watermark Label:</label>
@@ -99,6 +100,19 @@
                 placeholder="Enter watermark text"
               />
             </div>
+            <!-- Font size dropdown -->
+            <div class="form-group">
+              <label for="font-size">Font Size:</label>
+              <select class="form-control" name="font-size" id="font-size" required>
+                <option value="30">Small (30px)</option>
+                <option value="40">Medium (40px)</option>
+                <option value="50">Large (50px)</option>
+                <option value="60">Extra Large (60px)</option>
+              </select>
+            </div>
+
+            <input type="hidden" id="watermark-font" name="watermark-font" value="30">
+            
             <!-- Opacity slider -->
             <div class="form-group">
               <label for="opacity">Opacity (0.0% - 100.0%):</label>
@@ -106,7 +120,7 @@
                 type="range"
                 step="0.001"
                 class="form-control opacity-slider"
-                name="opacity"
+                name="watermark-opacity"
                 id="watermark-opacity"
                 min="0.000"
                 max="1.00"
@@ -116,14 +130,29 @@
               <span class="opacity-value">0.0%</span>
               <!-- Display current opacity and hold default opacity -->
             </div>
+        
           </div>
-          </div>
+          
 
         <button type="submit" class="btn btn-primary" style="margin-top: 20px;" >Add Overlay</button>
       </div>
     </div>
   </form>
 </div>
+
+<script>
+  document.getElementById('font-size').addEventListener('change', function() {
+    // Get the selected font size value
+    const selectedFontSize = this.value;
+    
+    // Update the value of the watermark-font hidden input
+    document.getElementById('watermark-font').value = selectedFontSize;
+    
+    // Optional: log the change to console for debugging
+    console.log('Selected font size:', selectedFontSize);
+    console.log('Watermark font updated to:', document.getElementById('watermark-font').value);
+  });
+</script>
 
 <script>
   // a collection of "opacity-slider", allowing for itteration

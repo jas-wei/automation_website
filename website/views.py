@@ -43,7 +43,7 @@ def home():
                 flash('Note added!', category='success')
         # handles the inputted image and the opacity post request from the viewer
         elif 'input_file' in request.files:
-            print("Input file received")  # Debug statement
+            # print("Input file received")  # Debug statement
             file = request.files['input_file']
             
             if file.filename == '':
@@ -51,24 +51,35 @@ def home():
                 return redirect(request.url)
             
             else:
-                print(f"Processing file: {file.filename}")  # Debug statement
+                # print(f"Processing file: {file.filename}")  # Debug statement
                 # creates a filepath to downloads and save the file to the desired location
                 file_path = os.path.join(UPLOAD_FOLDER, file.filename)
                 file.save(file_path)
+                output_path = os.path.join(DOWNLOAD_FOLDER, 'output.png')
 
-                opacity = request.form.get('opacity')
-                print(f"Received opacity: {opacity}")  # Debug statement
+                # AI part
+                ai_opacity = request.form.get('ai-opacity')
+                overlay.add_AI_disturbance_overlay(file_path, output_path, ai_opacity)
+                # print(f"Received opacity: {ai_opacity}")  # Debug statement
+
+                # Watermark part
+                watermark_opacity = request.form.get('watermark-opacity')
+                watermark_label = request.form.get('watermark-label')
+                font_size = request.form.get('watermark-font')
+                overlay.add_watermark(output_path, output_path, watermark_label, watermark_opacity, font_size)
+                # print(f"\n\n\n{watermark_opacity, watermark_label}\n\n\n")
+                # watermark_font_size = request.form.get('font-size')
 
                 # Process the input URL or the uploaded file with the specified opacity
-                output_path = os.path.join(DOWNLOAD_FOLDER, 'output.png')
-                overlay.add_AI_disturbance_overlay(file_path, opacity, output_path)
+                
+                
                 flash('AI disturbance overlay added!', category='success')
                 output_image_url = url_for('views.download_file', filename='output.png')
-                print(f"Generated URL: {output_image_url}")  # Debug statement
+                # print(f"Generated URL: {output_image_url}")  # Debug statement
                 session['output_image_url'] = output_image_url  # Store the URL in the session
                 return redirect(url_for('views.home'))
 
-    print(f"\n\n\nRendering with URL: {output_image_url}\n\n\n")  # Debug statement
+    # print(f"\n\n\nRendering with URL: {output_image_url}\n\n\n")  # Debug statement
     return render_template('home.html', user=current_user, output_image_url=output_image_url)
 
 @views.route('/delete-note', methods=['POST'])
