@@ -11,7 +11,7 @@ def timeit(func):
         return result  # Return the result of the function
     return wrapper
 
-@timeit
+# @timeit
 def add_AI_disturbance_overlay(input_path, output_path, opacity):
     """
     This function overlays an AI disturbance image on top of your original image
@@ -59,7 +59,7 @@ def add_AI_disturbance_overlay(input_path, output_path, opacity):
     except Exception as e:
         print(f"An error occurred: {e}")
 
-@timeit
+# @timeit
 def add_watermark(input_path, output_path, watermark_text, opacity, size):
     try:
         # Ensure opacity is a float

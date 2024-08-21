@@ -41,13 +41,7 @@
       "
     >
       <div style="text-align: left; width: 50%">
-        {% if output_image_url %}
-        <h3>Processed Image</h3>
-        <img
-          src="{{url_for('static', filename='downloads/output.png')}}"
-          width="500"
-        />
-        {% else %}
+
         <div class="form-group">
           <label for="input_file">Upload an Image:</label>
           <input
@@ -58,7 +52,15 @@
             accept="image/*"
           />
         </div>
+        {% if output_image_url %}
+        <img
+        src="{{ url_for('static', filename='downloads/output.png') }}"
+        width="500"
+        />
+        <a href="..\static\downloads\output.png" class="btn btn-primary" style="margin-top: 20px;" download="output.png">Download Image</a>
+
         {% endif %}
+        
       </div>
 
       <div style="text-align: right; width: 50%">
@@ -77,7 +79,7 @@
                 id="ai-opacity"
                 min="0.000"
                 max="0.500"
-                value="0.000"
+                value="{{ user.preference.overlay_opacity }}"
                 required
               />
               <span class="opacity-value">0.0%</span>
@@ -93,12 +95,13 @@
             <div class="form-group">
               <label for="watermark-label">Watermark Label:</label>
               <input
-                type="text"
-                class="form-control"
-                name="watermark-label"
-                id="watermark-label"
-                placeholder="Enter watermark text"
-              />
+              type="text"
+              class="form-control"
+              name="watermark-label"
+              id="watermark-label"
+              placeholder="{{ user.preference.watermark_label }}"
+              value="{{ user.preference.watermark_label }}"
+            />
             </div>
             <!-- Font size dropdown -->
             <div class="form-group">
@@ -111,7 +114,7 @@
               </select>
             </div>
 
-            <input type="hidden" id="watermark-font" name="watermark-font" value="30">
+            <input type="hidden" id="watermark-font" name="watermark-font" value="{{ user.preference.font_size }}">
             
             <!-- Opacity slider -->
             <div class="form-group">
@@ -124,17 +127,16 @@
                 id="watermark-opacity"
                 min="0.000"
                 max="1.00"
-                value="0.000"
+                value="{{ user.preference.watermark_opacity }}"
                 required
               />
               <span class="opacity-value">0.0%</span>
               <!-- Display current opacity and hold default opacity -->
             </div>
-        
           </div>
-          
-
-        <button type="submit" class="btn btn-primary" style="margin-top: 20px;" >Add Overlay</button>
+    
+          <button type="submit" name="action" value="apply" class="btn btn-primary" style="margin-top: 20px;">Apply</button>
+          <button type="submit" name="action" value="save_preferences" class="btn btn-primary" style="margin-top: 20px;">Save Preferences</button>          
       </div>
     </div>
   </form>
