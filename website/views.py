@@ -43,7 +43,7 @@ def home():
         #         flash('Note added!', category='success')
         # # handles the inputted image and the opacity post request from the viewer
             # Ensure user has preferences
-        if not current_user.preference:
+        if not current_user.get_preference():
             # Initialize default preferences for user if not present
             new_preference = Preferences(
                 overlay_opacity="0.000",
@@ -54,22 +54,19 @@ def home():
             )
             db.session.add(new_preference)
             db.session.commit()
-            print(f"\n\n\n{current_user.preference}\n\n\n")
+            print(f"\n\n\n{current_user.get_preference()}\n\n\n")
         if request.form['action'] == 'save_preferences':
             # note = request.form.get('note')#Gets the note from the HTML
-            new_preference = Preferences(
-                overlay_opacity = request.form.get('ai-opacity'), 
-                watermark_opacity = request.form.get('watermark-opacity'), 
-                watermark_label = request.form.get('watermark-label'), 
-                font_size = request.form.get('watermark-font'), 
-                user_id=current_user.id
+            current_user.update_preference(
+                overlay_opacity=request.form.get('ai-opacity'),
+                watermark_opacity=request.form.get('watermark-opacity'),
+                watermark_label=request.form.get('watermark-label'),
+                font_size=request.form.get('font-size')
             )
-            # print(f"\n\n\n{get_overlay_opacity, get_watermark_opacity, get_watermark_label, get_font_size}\n\n\n")
-
-            db.session.add(new_preference)
-            db.session.commit()
+            # db.session.add(new_preference)
+            # db.session.commit()
             flash('Preference updated!', category='success')
-            print(f"\n\n\n{current_user.preference}\n\n\n")
+            print(f"\n\n\n{current_user.get_preference()}\n\n\n")
 
         # handles the inputted image and the opacity post request from the viewer
         elif (request.form['action'] == 'apply'): #and ('input_file' in request.files)
