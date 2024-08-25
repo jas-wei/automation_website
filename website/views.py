@@ -4,6 +4,8 @@ import json
 import subprocess
 import os
 
+from werkzeug.utils import secure_filename
+
 from . import db
 from .models import User, Preferences
 from .automation_script import overlay  # Import the function
@@ -14,6 +16,10 @@ views = Blueprint('views', __name__)
 UPLOAD_FOLDER = os.path.join('website', 'uploads')
 DOWNLOAD_FOLDER = os.path.join('website', 'static', 'downloads')  # Define the download folder
 
+
+# Allowed file extensions for image uploads
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
 @views.route('/downloads/<filename>')
 def download_file(filename):
     try:
@@ -23,28 +29,16 @@ def download_file(filename):
         print(f"Error sending file: {e}", flush=True)
         return "File not found", 404
 
-
-
 @views.route('/', methods=['GET', 'POST']) #home route
 @login_required
 def home():
-    output_image_url = session.pop('output_image_url', None)  # Retrieve and remove the URL from the session
+    # Retrieve the output image URL and original image path from the session
+    output_image_url = session.pop('output_image_url', None)  # <--- No change
+    original_image_path = session.get('original_image_path', None)  # <--- NEW: Retrieve the original image path from session
 
     if request.method == 'POST': 
-        # if 'note' in request.form:
-        #     note = request.form.get('note')#Gets the note from the HTML 
-
-        #     if len(note) < 1:#if note is too short, flash error
-        #         flash('Note is too short!', category='error') 
-        #     else:
-        #         new_note = Note(data=note, user_id=current_user.id)  #providing the scheme for the note 
-        #         db.session.add(new_note) #adding and committing the note to the database. just like how user was in auth.py
-        #         db.session.commit()
-        #         flash('Note added!', category='success')
-        # # handles the inputted image and the opacity post request from the viewer
-            # Ensure user has preferences
         if not current_user.get_preference():
-            # Initialize default preferences for user if not present
+            # Initialize default preferences for the user if not present
             new_preference = Preferences(
                 overlay_opacity="0.000",
                 watermark_opacity="0.000",
@@ -54,21 +48,18 @@ def home():
             )
             db.session.add(new_preference)
             db.session.commit()
-            print(f"\n\n\n{current_user.get_preference()}\n\n\n")
-        if request.form['action'] == 'save_preferences':
-            # note = request.form.get('note')#Gets the note from the HTML
-            current_user.update_preference(
-                overlay_opacity=request.form.get('ai-opacity'),
-                watermark_opacity=request.form.get('watermark-opacity'),
-                watermark_label=request.form.get('watermark-label'),
-                font_size=request.form.get('font-size')
-            )
-            # db.session.add(new_preference)
-            # db.session.commit()
-            flash('Preference updated!', category='success')
-            print(f"\n\n\n{current_user.get_preference()}\n\n\n")
 
-        # handles the inputted image and the opacity post request from the viewer
+        # if request.form['action'] == 'save_preferences':
+        #     # Save user preferences
+        #     current_user.update_preference(
+        #         overlay_opacity=request.form.get('ai-opacity'),
+        #         watermark_opacity=request.form.get('watermark-opacity'),
+        #         watermark_label=request.form.get('watermark-label'),
+        #         font_size=request.form.get('font-size')
+        #     )
+        #     flash('Preferences updated!', category='success')
+
+        # Handles the image upload and processing
         elif (request.form['action'] == 'apply'): #and ('input_file' in request.files)
             # print("Input file received")  # Debug statement
             file = request.files['input_file']
@@ -104,21 +95,20 @@ def home():
                 # print(f"Generated URL: {output_image_url}")  # Debug statement
                 session['output_image_url'] = output_image_url  # Store the URL in the session
                 os.remove(file_path)
-                return redirect(url_for('views.home'))
 
+                # Save user preferences
+                current_user.update_preference(
+                    overlay_opacity=request.form.get('ai-opacity'),
+                    watermark_opacity=request.form.get('watermark-opacity'),
+                    watermark_label=request.form.get('watermark-label'),
+                    font_size=request.form.get('font-size')
+                )
+                flash('Preferences updated!', category='success')
+                return redirect(url_for('views.home'))
+            
     # print(f"\n\n\nRendering with URL: {output_image_url}\n\n\n")  # Debug statement
     return render_template('home.html', user=current_user, output_image_url=output_image_url)
 
-# @views.route('/delete-note', methods=['POST'])
-# def delete_note():  
-#     note = json.loads(request.data) # this function expects a JSON from the INDEX.js file 
-#     noteId = note['noteId']
-#     note = Note.query.get(noteId)
-#     if note:
-#         if note.user_id == current_user.id:
-#             db.session.delete(note)
-#             db.session.commit()
-#     return jsonify({})
 
 @views.route('/run-script', methods=['POST'])
 def run_script():
@@ -131,3 +121,7 @@ def run_script():
         print("Script execution failed")
         print("stderr:", result.stderr)
     return redirect(url_for('views.home'))
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+

@@ -34,6 +34,7 @@ class User(db.Model, UserMixin):
             db.session.add(self.preference)
             db.session.commit()
         return self.preference
+    
 
     # Helper method to update preferences
     def update_preference(self, overlay_opacity=None, watermark_opacity=None, watermark_label=None, font_size=None):

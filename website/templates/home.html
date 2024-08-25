@@ -1,28 +1,5 @@
 {% extends "base.html" %} {% block title %} Home {% endblock %} {% block content
 %}
-<!-- <h1 align="center">Notes</h1>
-<ul class="list-group list-group-flush" id="notes">
-  {% for note in user.notes %}
-  <li class="list-group-item">
-    {{ note.data }}
-    <button
-      type="button"
-      class="close"
-      data-note-id="{{ note.id }}"
-      onClick="deleteNote(this)"
-    >
-      <span aria-hidden="true">&times;</span>
-    </button>
-  </li>
-  {% endfor %}
-</ul>
-<form method="POST">
-  <textarea name="note" id="note" class="form-control"></textarea>
-  <br />
-  <div align="center">
-    <button type="submit" class="btn btn-primary">Add Note</button>
-  </div>
-</form> -->
 
 <!-- art protection form -->
 <div align="center">
@@ -82,7 +59,7 @@
                 value="{{ user.preference.overlay_opacity }}"
                 required
               />
-              <span class="opacity-value">0.0%</span>
+              <span class="opacity-value" id="opacity-value"></span>
               <!-- Display current opacity and hold default opacity -->
             </div>
           </div>
@@ -99,7 +76,7 @@
               class="form-control"
               name="watermark-label"
               id="watermark-label"
-              placeholder="{{ user.preference.watermark_label }}"
+              placeholder="Enter Text"
               value="{{ user.preference.watermark_label }}"
             />
             </div>
@@ -107,10 +84,10 @@
             <div class="form-group">
               <label for="font-size">Font Size:</label>
               <select class="form-control" name="font-size" id="font-size" required>
-                <option value="30">Small (30px)</option>
-                <option value="40">Medium (40px)</option>
-                <option value="50">Large (50px)</option>
-                <option value="60">Extra Large (60px)</option>
+                  <option value="30" {% if user.preference.font_size == "30" %}selected{% endif %}>Small (30px)</option>
+                  <option value="40" {% if user.preference.font_size == "40" %}selected{% endif %}>Medium (40px)</option>
+                  <option value="50" {% if user.preference.font_size == "50" %}selected{% endif %}>Large (50px)</option>
+                  <option value="60" {% if user.preference.font_size == "60" %}selected{% endif %}>Extra Large (60px)</option>
               </select>
             </div>
 
@@ -130,41 +107,107 @@
                 value="{{ user.preference.watermark_opacity }}"
                 required
               />
-              <span class="opacity-value">0.0%</span>
+              <span class="opacity-value" id="opacity-value"></span>
               <!-- Display current opacity and hold default opacity -->
             </div>
           </div>
     
-          <button type="submit" name="action" value="apply" class="btn btn-primary" style="margin-top: 20px;">Apply</button>
-          <button type="submit" name="action" value="save_preferences" class="btn btn-primary" style="margin-top: 20px;">Save Preferences</button>          
+          <button type="submit" name="action" value="apply" class="btn btn-primary" style="margin-top: 20px;">Save and apply</button>
+          <!-- <button type="submit" name="action" value="save_preferences" class="btn btn-primary" style="margin-top: 20px;">Save Preferences</button>           -->
       </div>
     </div>
   </form>
 </div>
 
 <script>
+  // Add an event listener to the 'font-size' select element that triggers when its value changes
   document.getElementById('font-size').addEventListener('change', function() {
-    // Get the selected font size value
+    // Get the selected font size value from the dropdown
     const selectedFontSize = this.value;
     
-    // Update the value of the watermark-font hidden input
+    // Update the value of the hidden input field 'watermark-font' to the selected font size
     document.getElementById('watermark-font').value = selectedFontSize;
-    
-    // Optional: log the change to console for debugging
-    console.log('Selected font size:', selectedFontSize);
-    console.log('Watermark font updated to:', document.getElementById('watermark-font').value);
   });
 </script>
 
 <script>
-  // a collection of "opacity-slider", allowing for itteration
+  // Get all elements with the class "opacity-slider" (these will be input elements like sliders)
   const sliders = document.getElementsByClassName("opacity-slider");
+  
+  // Get all elements with the class "opacity-value" (these will display the value of the corresponding slider)
   const values = document.getElementsByClassName("opacity-value");
 
+  // Iterate over all sliders
   for (let i = 0; i < sliders.length; i++) {
+    // Add an event listener to each slider that listens for the "input" event (which occurs when the slider's value changes)
     sliders[i].addEventListener("input", function () {
+      // Update the corresponding opacity value display with the slider's current value, multiplied by 100 and rounded to 1 decimal place
       values[i].textContent = `${(sliders[i].value * 100).toFixed(1)}%`;
     });
   }
+</script>
+
+
+<script>
+  // The JavaScript function to multiply the string by 10
+  function multiplyStringByTen(inputString) {
+      // Convert the string to a float
+      let floatValue = parseFloat(inputString);
+
+      // Multiply the float by 10
+      let multipliedValue = floatValue * 100;
+
+      // Round to 1 decimal place
+      let roundedValue = multipliedValue.toFixed(1);
+
+      // Convert the result back to a string
+      return roundedValue.toString();
+  }
+
+  // Function to update the span with the result
+  function updateOpacityValue() {
+        // Replace this with the actual user preference values dynamically set via templating engine
+        let userOverlayOpacity = "{{ user.preference.overlay_opacity | default('0.0') }}"; // Default to '0.0' if None
+        let userWatermarkOpacity = "{{ user.preference.watermark_opacity | default('0.0') }}";
+
+        // Convert the values to float to ensure correct type handling
+        userOverlayOpacity = parseFloat(userOverlayOpacity);
+        userWatermarkOpacity = parseFloat(userWatermarkOpacity);
+
+        // Get all elements with the class 'opacity-value'
+        let elements = document.getElementsByClassName('opacity-value');
+
+        // Ensure that elements exist and update the innerText
+        if (elements[0]) {
+            elements[0].innerText = multiplyStringByTen(userOverlayOpacity) + "%";
+        }
+        if (elements[1]) {
+            elements[1].innerText = multiplyStringByTen(userWatermarkOpacity) + "%";
+        }
+    }
+  
+  function initOpacitySlider(){
+        const sliders = document.getElementsByClassName("opacity-slider");
+
+        let userOverlayOpacity = "{{ user.preference.overlay_opacity | default('0.0') }}"; // Default to '0.0' if None
+        let userWatermarkOpacity = "{{ user.preference.watermark_opacity | default('0.0') }}";
+
+        if (userOverlayOpacity =="0.0") {
+          sliders[0].value = sliders[0].min;  // Set slider to its minimum value
+        }
+        if (userWatermarkOpacity =="0.0") {
+          sliders[1].value = sliders[1].min;  // Set slider to its minimum value
+        }
+
+  }
+
+  function funcsOnLOad(){
+    updateOpacityValue();
+    initOpacitySlider();
+  }
+
+  // Call this function when the window loads
+  window.onload = funcsOnLOad;
+
 </script>
 {% endblock %}
