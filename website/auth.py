@@ -34,6 +34,7 @@ def login():
 @auth.route('/logout')
 @login_required #required to login before logging out
 def logout():
+    #maybe remove folder?
     logout_user() #from flask_login
     return redirect(url_for('auth.login')) #back to login page
 

@@ -1,10 +1,11 @@
-from flask import Blueprint, render_template, request, flash, jsonify, url_for, redirect, send_from_directory, session
+from flask import Blueprint, current_app, render_template, request, flash, jsonify, url_for, redirect, send_from_directory, session
 from flask_login import login_required, current_user 
 import json
 import subprocess
 import os
 
-from werkzeug.utils import secure_filename
+# from werkzeug.utils import secure_filename
+import shutil
 
 from . import db
 from .models import User, Preferences
@@ -12,13 +13,15 @@ from .automation_script import overlay  # Import the function
 
 views = Blueprint('views', __name__)
 
-# Define the upload folder
-UPLOAD_FOLDER = os.path.join('website', 'uploads')
 DOWNLOAD_FOLDER = os.path.join('website', 'static', 'downloads')  # Define the download folder
 
+# Function to create a user-specific folder
+def create_user_folder(user_id):
+    user_folder = os.path.join(current_app.config['UPLOAD_FOLDER'], str(user_id))  # Create folder path based on user ID
+    if not os.path.exists(user_folder):  # Check if the folder already exists
+        os.makedirs(user_folder)  # Create the folder
+    return user_folder
 
-# Allowed file extensions for image uploads
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 @views.route('/downloads/<filename>')
 def download_file(filename):
@@ -34,7 +37,9 @@ def download_file(filename):
 def home():
     # Retrieve the output image URL and original image path from the session
     output_image_url = session.pop('output_image_url', None)  # <--- No change
-    original_image_path = session.get('original_image_path', None)  # <--- NEW: Retrieve the original image path from session
+    user_folder = create_user_folder(current_user.get_preference().user_id)
+    
+    print(f"\n\n\n ITS REPEATING \n\n\n")
 
     if request.method == 'POST': 
         if not current_user.get_preference():
@@ -49,62 +54,47 @@ def home():
             db.session.add(new_preference)
             db.session.commit()
 
-        # if request.form['action'] == 'save_preferences':
-        #     # Save user preferences
-        #     current_user.update_preference(
-        #         overlay_opacity=request.form.get('ai-opacity'),
-        #         watermark_opacity=request.form.get('watermark-opacity'),
-        #         watermark_label=request.form.get('watermark-label'),
-        #         font_size=request.form.get('font-size')
-        #     )
-        #     flash('Preferences updated!', category='success')
-
         # Handles the image upload and processing
-        elif (request.form['action'] == 'apply'): #and ('input_file' in request.files)
-            # print("Input file received")  # Debug statement
+        if request.form['action'] == 'apply':
             file = request.files['input_file']
-            
+
+            # Check if no new file is uploaded
             if file.filename == '':
-                flash('No selected file')
-                return redirect(request.url)
-            
+                # Retrieve the current image from the user's folder
+                existing_files = os.listdir(user_folder)  # List files in the user folder
+                if existing_files:
+                    # Assume the first file in the folder is the current image
+                    file_path = os.path.join(user_folder, existing_files[0])
+                    flash('Using existing file in your folder.', category='info')
+                else:
+                    # No file in the folder and no new file uploaded
+                    flash('No file uploaded or found in your folder.', category='error')
+                    return redirect(request.url)
             else:
-                # print(f"Processing file: {file.filename}")  # Debug statement
-                # creates a filepath to downloads and save the file to the desired location
-                file_path = os.path.join(UPLOAD_FOLDER, file.filename)
+                # Save the newly uploaded file
+                # Clear the user's folder first
+                shutil.rmtree(user_folder)
+                os.makedirs(user_folder)  # Recreate the empty folder
+                file_path = os.path.join(user_folder, file.filename)
                 file.save(file_path)
-                output_path = os.path.join(DOWNLOAD_FOLDER, 'output.png')
 
-                # AI part
-                ai_opacity = request.form.get('ai-opacity')
-                overlay.add_AI_disturbance_overlay(file_path, output_path, ai_opacity)
-                # print(f"Received opacity: {ai_opacity}")  # Debug statement
+            output_path = os.path.join(DOWNLOAD_FOLDER, 'output.png')
 
-                # Watermark part
-                watermark_opacity = request.form.get('watermark-opacity')
-                watermark_label = request.form.get('watermark-label')
-                font_size = request.form.get('watermark-font')
-                overlay.add_watermark(output_path, output_path, watermark_label, watermark_opacity, font_size)
-                # print(f"\n\n\n{watermark_opacity, watermark_label}\n\n\n")
+            # Apply image manipulation (AI disturbance overlay, watermark, etc.)
+            apply_image_manipulation(file_path, output_path)
 
-                # Process the input URL or the uploaded file with the specified opacity
-                
-                
-                flash('AI disturbance overlay added!', category='success')
-                output_image_url = url_for('views.download_file', filename='output.png')
-                # print(f"Generated URL: {output_image_url}")  # Debug statement
-                session['output_image_url'] = output_image_url  # Store the URL in the session
-                os.remove(file_path)
+            output_image_url = url_for('views.download_file', filename='output.png')
+            session['output_image_url'] = output_image_url  # Store the URL in the session
 
-                # Save user preferences
-                current_user.update_preference(
-                    overlay_opacity=request.form.get('ai-opacity'),
-                    watermark_opacity=request.form.get('watermark-opacity'),
-                    watermark_label=request.form.get('watermark-label'),
-                    font_size=request.form.get('font-size')
-                )
-                flash('Preferences updated!', category='success')
-                return redirect(url_for('views.home'))
+            # Save user preferences
+            current_user.update_preference(
+                overlay_opacity=request.form.get('ai-opacity'),
+                watermark_opacity=request.form.get('watermark-opacity'),
+                watermark_label=request.form.get('watermark-label'),
+                font_size=request.form.get('font-size')
+            )
+            flash('Preferences updated!', category='success')
+            return redirect(url_for('views.home'))
             
     # print(f"\n\n\nRendering with URL: {output_image_url}\n\n\n")  # Debug statement
     return render_template('home.html', user=current_user, output_image_url=output_image_url)
@@ -122,6 +112,14 @@ def run_script():
         print("stderr:", result.stderr)
     return redirect(url_for('views.home'))
 
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+def apply_image_manipulation(file_path, output_path):
+    # AI part
+    ai_opacity = request.form.get('ai-opacity')
+    overlay.add_AI_disturbance_overlay(file_path, output_path, ai_opacity)
+
+    # Watermark part
+    watermark_opacity = request.form.get('watermark-opacity')
+    watermark_label = request.form.get('watermark-label')
+    font_size = request.form.get('watermark-font')
+    overlay.add_watermark(output_path, output_path, watermark_label, watermark_opacity, font_size)

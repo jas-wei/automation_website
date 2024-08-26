@@ -3,6 +3,8 @@ from flask_sqlalchemy import SQLAlchemy
 from os import path
 from flask_login import LoginManager
 
+import os
+
 
 db = SQLAlchemy() # object used to manipulate database
 DB_NAME = "new_database.db"
@@ -12,6 +14,9 @@ def create_app():
     app.config['SECRET_KEY'] = 'alksnfgsdohuinwel69023nosg'
     app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DB_NAME}' # telling to store database in website folder
 
+    UPLOAD_FOLDER = os.path.join('website', 'uploads')
+    app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER  # Set 'UPLOAD_FOLDER' key in app config
+    
     db.init_app(app)
 
     from .views import views
