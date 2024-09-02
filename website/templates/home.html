@@ -44,10 +44,10 @@
         <div>
           <div style="border: 1px solid lightgrey; padding: 10px; margin-top: 20px;">
             <!-- AI disturbance overlay form -->
-            <h3>AI Disturbance Overlay</h3>
+            <h3 style="text-align: center;">AI Disturbance Overlay</h3>
             <!-- Opacity slider -->
             <div class="form-group">
-              <label for="opacity">Opacity (0.0% - 50.0%):</label>
+              <label for="opacity">Opacity</label>
               <input
                 type="range"
                 step="0.001"
@@ -66,7 +66,7 @@
           
           <div style="border: 1px solid lightgrey; padding: 10px; margin-top: 20px;">
             <!-- watermark overlay form -->
-            <h3>Watermark</h3>
+            <h3 style="text-align: center;">Watermark</h3>
             
             <!-- Text box for watermark label -->
             <div class="form-group">
@@ -80,22 +80,46 @@
               value="{{ user.preference.watermark_label }}"
             />
             </div>
-            <!-- Font size dropdown -->
-            <div class="form-group">
-              <label for="font-size">Font Size:</label>
-              <select class="form-control" name="font-size" id="font-size" required>
-                  <option value="30" {% if user.preference.font_size == "30" %}selected{% endif %}>Small (30px)</option>
-                  <option value="40" {% if user.preference.font_size == "40" %}selected{% endif %}>Medium (40px)</option>
-                  <option value="50" {% if user.preference.font_size == "50" %}selected{% endif %}>Large (50px)</option>
-                  <option value="60" {% if user.preference.font_size == "60" %}selected{% endif %}>Extra Large (60px)</option>
-              </select>
-            </div>
-
-            <input type="hidden" id="watermark-font" name="watermark-font" value="{{ user.preference.font_size }}">
+            
+            <!-- Font options -->
+            <div class="row">
+              <!-- Font size -->
+              <div class="col-md-4">
+                  <div class="form-group">
+                      <!-- <label for="font-size">Font Size:</label> -->
+                      <input 
+                          type="number" 
+                          class="form-control" 
+                          id="font-size" 
+                          name="font-size" 
+                          min="10" max="100" 
+                          value="{{ user.preference.font_size }}" 
+                          oninput="updateFontSize()"
+                          required
+                      >
+                      <!-- <small class="form-text text-muted">10px - 100px.</small> -->
+                  </div>
+              </div>
+          
+              <!-- Font style -->
+              <div class="col-md-8">
+                  <div class="form-group">
+                      <!-- <label for="font-style">Font Style:</label> -->
+                      <select class="form-control" name="font-style" id="font-style" required>
+                          <option value="Newsreader-VariableFont_opsz,wght" {% if user.preference.font_style == "Newsreader-VariableFont_opsz,wght" %}selected{% endif %}>Newsreader</option>
+                          <option value="Montserrat-Medium" {% if user.preference.font_style == "Montserrat-Medium" %}selected{% endif %}>Montserrat</option>
+                      </select>
+                  </div>
+              </div>
+          </div>
+          
+          <!-- Hidden inputs to store the validated font size and style -->
+          <input type="hidden" id="watermark-size" name="watermark-size" value="{{ user.preference.font_size }}">
+          <input type="hidden" id="watermark-style" name="watermark-style" value="{{ user.preference.font_style }}">
             
             <!-- Opacity slider -->
             <div class="form-group">
-              <label for="opacity">Opacity (0.0% - 100.0%):</label>
+              <label for="opacity">Opacity</label>
               <input
                 type="range"
                 step="0.001"
@@ -120,13 +144,35 @@
 </div>
 
 <script>
+  // Function to update the hidden input with the entered font size
+  function updateFontSize() {
+      const fontSize = document.getElementById('font-size').value;
+      document.getElementById('watermark-size').value = fontSize;
+  }
+
+  // Automatically set the initial font size based on user preference
+  document.addEventListener('DOMContentLoaded', function() {
+      const initialSize = document.getElementById('font-size').value;
+      updateFontSize();
+  });
+</script>
+
+<script>
+  // // Add an event listener to the 'font-size' select element that triggers when its value changes
+  // document.getElementById('font-size').addEventListener('change', function() {
+  //   // Get the selected font size value from the dropdown
+  //   const selectedFontSize = this.value;
+  //   // Update the value of the hidden input field 'watermark-size' to the selected font size
+  //   document.getElementById('watermark-size').value = selectedFontSize;
+  // });
+
   // Add an event listener to the 'font-size' select element that triggers when its value changes
-  document.getElementById('font-size').addEventListener('change', function() {
+  document.getElementById('font-style').addEventListener('change', function() {
     // Get the selected font size value from the dropdown
-    const selectedFontSize = this.value;
+    const selectedFontStyle = this.value;
     
-    // Update the value of the hidden input field 'watermark-font' to the selected font size
-    document.getElementById('watermark-font').value = selectedFontSize;
+    // Update the value of the hidden input field 'watermark-size' to the selected font size
+    document.getElementById('watermark-style').value = selectedFontStyle;
   });
 </script>
 

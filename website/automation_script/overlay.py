@@ -60,7 +60,7 @@ def add_AI_disturbance_overlay(input_path, output_path, opacity):
         print(f"An error occurred: {e}")
 
 # @timeit
-def add_watermark(input_path, output_path, watermark_text, opacity, size):
+def add_watermark(input_path, output_path, watermark_text, opacity, size, style):
     try:
         # Ensure opacity is a float
         opacity = float(opacity)
@@ -76,7 +76,10 @@ def add_watermark(input_path, output_path, watermark_text, opacity, size):
         watermark = Image.new("RGBA", original.size)
 
         # Load a font and specify the size (e.g., 50 for larger text)
-        font = ImageFont.truetype("calibri.ttf", size)  # Adjust the font size as needed
+        # font = ImageFont.truetype("calibri.ttf", size)  # Adjust the font size as needed
+        # thing = "Newsreader-VariableFont_opsz,wght"
+        font = ImageFont.truetype(fr".\website\automation_script\watermark_fonts\{style}.ttf", size)
+
 
         # Create a drawing context
         draw = ImageDraw.Draw(watermark)

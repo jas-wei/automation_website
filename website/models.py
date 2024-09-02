@@ -8,6 +8,7 @@ class Preferences(db.Model):
     watermark_opacity = db.Column(db.String(50), default="0.000")
     watermark_label = db.Column(db.String(50), default="Enter Text")
     font_size = db.Column(db.String(50), default="30")
+    font_style = db.Column(db.String(50), default="Newsreader-VariableFont_opsz,wght")
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, unique=True)
 
 # Define User model with preferences helper methods
@@ -28,8 +29,9 @@ class User(db.Model, UserMixin):
                 user_id=self.id,
                 overlay_opacity="0.000",
                 watermark_opacity="0.000",
-                watermark_label="Enter Text",
-                font_size="30"
+                watermark_label="",
+                font_size="30",
+                font_style="Newsreader-VariableFont_opsz,wght"
             )
             db.session.add(self.preference)
             db.session.commit()
@@ -37,7 +39,7 @@ class User(db.Model, UserMixin):
     
 
     # Helper method to update preferences
-    def update_preference(self, overlay_opacity=None, watermark_opacity=None, watermark_label=None, font_size=None):
+    def update_preference(self, overlay_opacity=None, watermark_opacity=None, watermark_label=None, font_size=None, font_style=None):
         # Ensure that preferences exist before updating
         pref = self.get_preference()  # This ensures we get existing preferences or create defaults
 
@@ -50,5 +52,7 @@ class User(db.Model, UserMixin):
             pref.watermark_label = watermark_label
         if font_size is not None:
             pref.font_size = font_size
+        if font_style is not None:
+            pref.font_style = font_style
 
         db.session.commit()  # Save the changes to the database

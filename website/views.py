@@ -36,23 +36,12 @@ def download_file(filename):
 @login_required
 def home():
     # Retrieve the output image URL and original image path from the session
-    output_image_url = session.pop('output_image_url', None)  # <--- No change
+    output_image_url = session.pop('output_image_url', None)  
     user_folder = create_user_folder(current_user.get_preference().user_id)
     
-    print(f"\n\n\n ITS REPEATING \n\n\n")
+    # print(f"\n\n\n ITS REPEATING \n\n\n")
 
     if request.method == 'POST': 
-        if not current_user.get_preference():
-            # Initialize default preferences for the user if not present
-            new_preference = Preferences(
-                overlay_opacity="0.000",
-                watermark_opacity="0.000",
-                watermark_label="Enter Text",
-                font_size="30",
-                user_id=current_user.id
-            )
-            db.session.add(new_preference)
-            db.session.commit()
 
         # Handles the image upload and processing
         if request.form['action'] == 'apply':
@@ -75,6 +64,7 @@ def home():
                 # Clear the user's folder first
                 shutil.rmtree(user_folder)
                 os.makedirs(user_folder)  # Recreate the empty folder
+                
                 file_path = os.path.join(user_folder, file.filename)
                 file.save(file_path)
 
@@ -91,7 +81,8 @@ def home():
                 overlay_opacity=request.form.get('ai-opacity'),
                 watermark_opacity=request.form.get('watermark-opacity'),
                 watermark_label=request.form.get('watermark-label'),
-                font_size=request.form.get('font-size')
+                font_size=request.form.get('font-size'),
+                font_style=request.form.get('font-style')
             )
             flash('Preferences updated!', category='success')
             return redirect(url_for('views.home'))
@@ -121,5 +112,6 @@ def apply_image_manipulation(file_path, output_path):
     # Watermark part
     watermark_opacity = request.form.get('watermark-opacity')
     watermark_label = request.form.get('watermark-label')
-    font_size = request.form.get('watermark-font')
-    overlay.add_watermark(output_path, output_path, watermark_label, watermark_opacity, font_size)
+    font_size = request.form.get('watermark-size')
+    font_style = request.form.get('watermark-style')
+    overlay.add_watermark(output_path, output_path, watermark_label, watermark_opacity, font_size, font_style)

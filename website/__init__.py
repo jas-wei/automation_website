@@ -7,7 +7,7 @@ import os
 
 
 db = SQLAlchemy() # object used to manipulate database
-DB_NAME = "new_database.db"
+DB_NAME = "other_other_database.db"
 
 def create_app():
     app = Flask(__name__)
@@ -16,7 +16,7 @@ def create_app():
 
     UPLOAD_FOLDER = os.path.join('website', 'uploads')
     app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER  # Set 'UPLOAD_FOLDER' key in app config
-    
+
     db.init_app(app)
 
     from .views import views
