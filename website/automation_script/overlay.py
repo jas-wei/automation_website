@@ -105,3 +105,40 @@ def add_watermark(input_path, output_path, watermark_text, opacity, size, style)
     except Exception as e:
         print(f"An error occurred: {e}")
 
+def add_watermark_logo(input_path, output_path, opacity, logo_path):
+    try:
+        # Ensure opacity is a float
+        opacity = float(opacity)
+        if not (0.0 <= opacity <= 1.0):
+            raise ValueError("Opacity must be between 0.00 and 1.00")
+
+        # Open the input image and convert it to RGBA mode (includes alpha channel for transparency)
+        input_image = Image.open(input_path).convert("RGBA")
+        logo_image = Image.open(logo_path).convert("RGBA")
+
+        # Resize the logo to be 1/5 of the input image's width while maintaining the aspect ratio
+        input_width, input_height = input_image.size
+        logo_width = input_width // 5  # Logo width is 1/5 of input image width
+        logo_aspect_ratio = logo_image.height / logo_image.width
+        logo_height = int(logo_width * logo_aspect_ratio)
+
+        logo_image = logo_image.resize((logo_width, logo_height), Image.Resampling.LANCZOS)
+
+        # Adjust the opacity of the logo image
+        logo_image = logo_image.copy()  # Create a copy so that the original logo is not altered
+        alpha = logo_image.split()[3]  # Extract the alpha channel from the RGBA image
+        alpha = alpha.point(lambda p: p * opacity)  # Modify the alpha channel based on the opacity
+        logo_image.putalpha(alpha)  # Apply the modified alpha channel back to the logo
+
+        # Position the logo at the bottom-right corner of the input image
+        position = (input_width - logo_width - 10, input_height - logo_height - 10)  # 10px padding from the edges
+
+        # Paste the logo onto the input image using the alpha channel as the mask
+        input_image.paste(logo_image, position, logo_image)
+
+        # Save the resulting image
+        input_image.save(output_path, format="PNG", compress_level=1)
+
+        input_image.show()
+    except Exception as e:
+        print(f"An error occurred: {e}")

@@ -67,55 +67,72 @@
           <div style="border: 1px solid lightgrey; padding: 10px; margin-top: 20px;">
             <!-- watermark overlay form -->
             <h3 style="text-align: center;">Watermark</h3>
+
+            <div class="row" style="display: flex; justify-content: space-around;">
+              <button type="submit" name="action" value="text-options" class="btn btn-primary" style="margin: 20px;">Add text</button>
+              <button type="submit" name="action" value="logo-options" class="btn btn-primary" style="margin: 20px;">Add logo</button>
+            </div>
+          
+            {% if is_watermark_text == True %}
             
-            <!-- Text box for watermark label -->
-            <div class="form-group">
-              <label for="watermark-label">Watermark Label:</label>
-              <input
-              type="text"
-              class="form-control"
-              name="watermark-label"
-              id="watermark-label"
-              placeholder="Enter Text"
-              value="{{ user.preference.watermark_label }}"
-            />
+              <!-- Text box for watermark label -->
+              <div class="form-group">
+                <label for="watermark-label">Watermark Label:</label>
+                <input
+                type="text"
+                class="form-control"
+                name="watermark-label"
+                id="watermark-label"
+                placeholder="Enter Text"
+                value="{{ user.preference.watermark_label }}"
+              />
+              </div>
+              
+              <!-- Font options -->
+              <div class="row">
+                <!-- Font size -->
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <!-- <label for="font-size">Font Size:</label> -->
+                        <input 
+                            type="number" 
+                            class="form-control" 
+                            id="font-size" 
+                            name="font-size" 
+                            min="10" max="100" 
+                            value="{{ user.preference.font_size }}" 
+                            oninput="updateFontSize()"
+                            required
+                        >
+                        <!-- <small class="form-text text-muted">10px - 100px.</small> -->
+                    </div>
+                </div>
+            
+                <!-- Font style -->
+                <div class="col-md-8">
+                    <div class="form-group">
+                        <!-- <label for="font-style">Font Style:</label> -->
+                        <select class="form-control" name="font-style" id="font-style" required>
+                            <option value="Newsreader-VariableFont_opsz,wght" {% if user.preference.font_style == "Newsreader-VariableFont_opsz,wght" %}selected{% endif %}>Newsreader</option>
+                            <option value="Montserrat-Medium" {% if user.preference.font_style == "Montserrat-Medium" %}selected{% endif %}>Montserrat</option>
+                        </select>
+                    </div>
+                </div>
             </div>
             
-            <!-- Font options -->
-            <div class="row">
-              <!-- Font size -->
-              <div class="col-md-4">
-                  <div class="form-group">
-                      <!-- <label for="font-size">Font Size:</label> -->
-                      <input 
-                          type="number" 
-                          class="form-control" 
-                          id="font-size" 
-                          name="font-size" 
-                          min="10" max="100" 
-                          value="{{ user.preference.font_size }}" 
-                          oninput="updateFontSize()"
-                          required
-                      >
-                      <!-- <small class="form-text text-muted">10px - 100px.</small> -->
-                  </div>
-              </div>
-          
-              <!-- Font style -->
-              <div class="col-md-8">
-                  <div class="form-group">
-                      <!-- <label for="font-style">Font Style:</label> -->
-                      <select class="form-control" name="font-style" id="font-style" required>
-                          <option value="Newsreader-VariableFont_opsz,wght" {% if user.preference.font_style == "Newsreader-VariableFont_opsz,wght" %}selected{% endif %}>Newsreader</option>
-                          <option value="Montserrat-Medium" {% if user.preference.font_style == "Montserrat-Medium" %}selected{% endif %}>Montserrat</option>
-                      </select>
-                  </div>
-              </div>
-          </div>
-          
-          <!-- Hidden inputs to store the validated font size and style -->
-          <input type="hidden" id="watermark-size" name="watermark-size" value="{{ user.preference.font_size }}">
-          <input type="hidden" id="watermark-style" name="watermark-style" value="{{ user.preference.font_style }}">
+            <!-- Hidden inputs to store the validated font size and style -->
+            <input type="hidden" id="watermark-size" name="watermark-size" value="{{ user.preference.font_size }}">
+            <input type="hidden" id="watermark-style" name="watermark-style" value="{{ user.preference.font_style }}">
+
+            {% elif is_watermark_logo == True %}
+            <input
+              type="file"
+              class="form-control"
+              name="input_logo"
+              id="input_logo"
+              accept="image/*"
+            />
+            {% endif %}
             
             <!-- Opacity slider -->
             <div class="form-group">
