@@ -11,6 +11,10 @@ def timeit(func):
         return result  # Return the result of the function
     return wrapper
 
+def show_it(input_path):
+    image = Image.open(input_path).convert("RGBA")
+    image.show()
+
 # @timeit
 def add_AI_disturbance_overlay(input_path, output_path, opacity):
     """
@@ -101,6 +105,7 @@ def add_watermark(input_path, output_path, watermark_text, opacity, size, style)
         # Save the image
         # combined.show()  # Display the image (optional)
         combined.save(output_path, format="PNG", compress_level=1)
+        
 
     except Exception as e:
         print(f"An error occurred: {e}")
@@ -139,6 +144,5 @@ def add_watermark_logo(input_path, output_path, opacity, logo_path):
         # Save the resulting image
         input_image.save(output_path, format="PNG", compress_level=1)
 
-        input_image.show()
     except Exception as e:
         print(f"An error occurred: {e}")

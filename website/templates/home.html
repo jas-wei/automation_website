@@ -31,11 +31,11 @@
         </div>
         {% if output_image_url %}
         <img
-        src="{{ url_for('static', filename='downloads/output.png') }}"
+        src="{{ img_url }}"
         width="500"
         />
-        <a href="..\static\downloads\output.png" class="btn btn-primary" style="margin-top: 20px;" download="output.png">Download Image</a>
-
+        <a href="{{ img_url }}" class="btn btn-primary" style="margin-top: 20px;" download="output.png">Download Image</a>
+        <!-- <p>{{ img_url }}</p> -->
         {% endif %}
         
       </div>
@@ -99,7 +99,7 @@
                             class="form-control" 
                             id="font-size" 
                             name="font-size" 
-                            min="10" max="100" 
+                            min="10" max="300" 
                             value="{{ user.preference.font_size }}" 
                             oninput="updateFontSize()"
                             required

@@ -12,6 +12,8 @@ auth = Blueprint('auth', __name__)
 # Initialize routes
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
+    email_bool = False
+
     if request.method == 'POST':
         #getting email and password entered by user in login page
         email = request.form.get('email')
@@ -28,8 +30,10 @@ def login():
                 flash('Incorrect password, try again.', category='error')
         else:
             flash('Email does not exist.', category='error')
+            email_bool = True
 
-    return render_template("login.html", user=current_user)
+
+    return render_template("login.html", user=current_user, email_bool=email_bool)
 
 @auth.route('/logout')
 @login_required #required to login before logging out

@@ -30,5 +30,8 @@
   </div>
   <br />
   <button type="submit" class="btn btn-primary">Login</button>
+  {% if email_bool %}
+  <button type="submit" class="btn btn-primary">Sign Up</button>
+  {% endif %}
 </form>
 {% endblock %}

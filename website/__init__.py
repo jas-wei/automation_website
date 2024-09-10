@@ -17,6 +17,9 @@ def create_app():
     UPLOAD_FOLDER = os.path.join('website', 'uploads')
     app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER  # Set 'UPLOAD_FOLDER' key in app config
 
+    STATIC_FOLDER = os.path.join('website', 'static')
+    app.config['STATIC_FOLDER'] = STATIC_FOLDER  # Set 'UPLOAD_FOLDER' key in app config
+
     db.init_app(app)
 
     from .views import views
